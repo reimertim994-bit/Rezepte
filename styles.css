@@ -408,3 +408,137 @@ textarea {
         flex-direction: column;
     }
 }
+
+/* Grundsätzlich */
+html {
+  font-size: 16px;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+header,
+main {
+  width: 100%;
+}
+
+header {
+  padding: 24px clamp(16px, 5vw, 64px);
+}
+
+main {
+  width: min(1200px, calc(100% - 32px));
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .add-recipe-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .recipe-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .modal-content {
+    width: min(680px, calc(100% - 24px));
+  }
+}
+
+/* Handy */
+@media (max-width: 600px) {
+  header {
+    padding: 20px 16px;
+  }
+
+  header h1 {
+    font-size: 26px;
+  }
+
+  header p {
+    font-size: 14px;
+  }
+
+  main {
+    width: calc(100% - 24px);
+    margin: 24px auto;
+  }
+
+  .recipe-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .empty-state {
+    padding: 45px 16px;
+  }
+
+  .modal {
+    align-items: end;
+    padding: 0;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-height: 92vh;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .modal-header {
+    padding: 18px 16px;
+  }
+
+  form {
+    padding: 18px 16px;
+  }
+
+  .ingredient-input-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ingredient-input-row button {
+    grid-column: auto;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+
+  .scale-input-row {
+    flex-direction: column;
+  }
+
+  .selected-ingredient {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .remove-ingredient-button {
+    padding: 0;
+  }
+}
+
+/* Sehr kleine Handys */
+@media (max-width: 380px) {
+  header h1 {
+    font-size: 22px;
+  }
+
+  .add-recipe-button {
+    padding: 11px 14px;
+  }
+
+  .modal-header h2 {
+    font-size: 20px;
+  }
+}
