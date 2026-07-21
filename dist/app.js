@@ -1,5 +1,5 @@
 "use strict";
-const SUPABASE_URL = "https://nokeryzkvhswjhhhrnrd.supabase.co/rest/v1/";
+const SUPABASE_URL = "https://nokeryzkvhswjhhhrnrd.supabase.co";
 const SUPABASE_KEY = "sb_publishable_ecrd_N_mFJZGanoHCiVo9Q_B4sO-_Ta";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ingredientTemplates = [
@@ -41,9 +41,9 @@ const selectedIngredientsContainer = getElement("selectedIngredients");
 const ingredientError = getElement("ingredientError");
 const openRecipeModalButton = getElement("openRecipeModalButton");
 const addIngredientButton = getElement("addIngredientButton");
-let recipes = loadRecipes();
+let recipes = [];
 let currentIngredients = [];
-renderRecipes();
+void loadRecipes();
 openRecipeModalButton.addEventListener("click", openRecipeModal);
 document
     .querySelectorAll("[data-close-modal]")
@@ -57,7 +57,9 @@ ingredientSearchInput.addEventListener("focus", () => {
     showIngredientSuggestions(ingredientSearchInput.value);
 });
 addIngredientButton.addEventListener("click", addIngredient);
-recipeForm.addEventListener("submit", saveRecipe);
+recipeForm.addEventListener("submit", (event) => {
+    void saveRecipe(event);
+});
 document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
         closeRecipeModal();
@@ -103,9 +105,9 @@ function showIngredientSuggestions(searchValue) {
         button.type = "button";
         button.className = "suggestion-button";
         button.innerHTML = `
-            <span>${escapeHtml(ingredient.name)}</span>
-            <small>${ingredient.defaultUnit}</small>
-        `;
+      <span>${escapeHtml(ingredient.name)}</span>
+      <small>${ingredient.defaultUnit}</small>
+    `;
         button.addEventListener("click", () => {
             ingredientSearchInput.value = ingredient.name;
             ingredientUnitSelect.value = ingredient.defaultUnit;
@@ -114,15 +116,17 @@ function showIngredientSuggestions(searchValue) {
         });
         ingredientSuggestions.appendChild(button);
     });
-    if (normalizedSearch &&
-        !ingredientTemplates.some((ingredient) => ingredient.name.toLowerCase() === normalizedSearch)) {
+    const exactIngredientExists = ingredientTemplates.some((ingredient) => {
+        return ingredient.name.toLowerCase() === normalizedSearch;
+    });
+    if (normalizedSearch && !exactIngredientExists) {
         const customButton = document.createElement("button");
         customButton.type = "button";
         customButton.className = "suggestion-button";
         customButton.innerHTML = `
-            <span>„${escapeHtml(searchValue.trim())}“ verwenden</span>
-            <small>Eigene Zutat</small>
-        `;
+      <span>„${escapeHtml(searchValue.trim())}“ verwenden</span>
+      <small>Eigene Zutat</small>
+    `;
         customButton.addEventListener("click", () => {
             ingredientSearchInput.value = searchValue.trim();
             ingredientSuggestions.classList.add("hidden");
@@ -163,19 +167,20 @@ function renderSelectedIngredients() {
         const ingredientElement = document.createElement("div");
         ingredientElement.className = "selected-ingredient";
         ingredientElement.innerHTML = `
-            <span>
-                <strong>${escapeHtml(ingredient.name)}</strong>
-                – ${formatNumber(ingredient.amount)} ${ingredient.unit}
-            </span>
+      <span>
+        <strong>${escapeHtml(ingredient.name)}</strong>
+        – ${formatNumber(ingredient.amount)}
+        ${ingredient.unit}
+      </span>
 
-            <button
-                type="button"
-                class="remove-ingredient-button"
-            >
-                Entfernen
-            </button>
-        `;
-        const removeButton = ingredientElement.querySelector("button");
+      <button
+        type="button"
+        class="remove-ingredient-button"
+      >
+        Entfernen
+      </button>
+    `;
+        const removeButton = ingredientElement.querySelector(".remove-ingredient-button");
         removeButton?.addEventListener("click", () => {
             currentIngredients = currentIngredients.filter((currentIngredient) => currentIngredient.id !== ingredient.id);
             renderSelectedIngredients();
@@ -183,10 +188,11 @@ function renderSelectedIngredients() {
         selectedIngredientsContainer.appendChild(ingredientElement);
     });
 }
-function saveRecipe(event) {
+async function saveRecipe(event) {
     event.preventDefault();
     const recipeName = recipeNameInput.value.trim();
     const instructions = recipeInstructionsInput.value.trim();
+    ingredientError.textContent = "";
     if (!recipeName) {
         return;
     }
@@ -194,17 +200,55 @@ function saveRecipe(event) {
         ingredientError.textContent = "Das Rezept benötigt mindestens eine Zutat.";
         return;
     }
-    recipes.push({
+    const newRecipe = {
         id: createId(),
         name: recipeName,
         instructions,
         ingredients: currentIngredients.map((ingredient) => ({
             ...ingredient,
         })),
+    };
+    const submitButton = recipeForm.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Wird gespeichert ...";
+    }
+    const { error } = await supabaseClient.from("recipes").insert({
+        id: newRecipe.id,
+        recipe_data: newRecipe,
     });
-    saveRecipes();
-    renderRecipes();
+    if (submitButton) {
+        submitButton.disabled = false;
+        submitButton.textContent = "Rezept speichern";
+    }
+    if (error) {
+        console.error("Fehler beim Speichern des Rezeptes:", error);
+        alert(`Rezept konnte nicht gespeichert werden:\n${error.message}`);
+        return;
+    }
     closeRecipeModal();
+    await loadRecipes();
+}
+async function loadRecipes() {
+    const { data, error } = await supabaseClient
+        .from("recipes")
+        .select("id, recipe_data, created_at")
+        .order("created_at", {
+        ascending: false,
+    });
+    if (error) {
+        console.error("Fehler beim Laden der Rezepte:", error);
+        alert(`Rezepte konnten nicht geladen werden:\n${error.message}`);
+        return;
+    }
+    const rows = (data ?? []);
+    recipes = rows.map((row) => {
+        return {
+            ...row.recipe_data,
+            id: row.id,
+        };
+    });
+    renderRecipes();
 }
 function renderRecipes() {
     recipeList.innerHTML = "";
@@ -213,66 +257,68 @@ function renderRecipes() {
         const recipeCard = document.createElement("article");
         recipeCard.className = "recipe-card";
         recipeCard.innerHTML = `
-            <div class="recipe-card-header">
-                <h2>${escapeHtml(recipe.name)}</h2>
+      <div class="recipe-card-header">
+        <h2>${escapeHtml(recipe.name)}</h2>
 
-                <button
-                    type="button"
-                    class="delete-button"
-                    aria-label="Rezept löschen"
-                >
-                    ×
-                </button>
-            </div>
+        <button
+          type="button"
+          class="delete-button"
+          aria-label="Rezept löschen"
+        >
+          ×
+        </button>
+      </div>
 
-            <div class="recipe-content">
-                <h3>Zutaten</h3>
+      <div class="recipe-content">
+        <h3>Zutaten</h3>
 
-                <ul class="ingredient-list">
-                    ${createIngredientList(recipe.ingredients)}
-                </ul>
+        <ul class="ingredient-list">
+          ${createIngredientList(recipe.ingredients)}
+        </ul>
 
-                <div class="scale-box">
-                    <label>Mengen anpassen</label>
+        <div class="scale-box">
+          <label>Mengen anpassen</label>
 
-                    <div class="scale-input-row">
-                        <select class="scale-ingredient-select">
-                            ${recipe.ingredients
+          <div class="scale-input-row">
+            <select class="scale-ingredient-select">
+              ${recipe.ingredients
             .map((ingredient) => `
-                                        <option value="${ingredient.id}">
-                                            ${escapeHtml(ingredient.name)}
-                                        </option>
-                                    `)
+                    <option value="${ingredient.id}">
+                      ${escapeHtml(ingredient.name)}
+                    </option>
+                  `)
             .join("")}
-                        </select>
+            </select>
 
-                        <input
-                            class="available-amount-input"
-                            type="number"
-                            min="0.01"
-                            step="0.01"
-                            placeholder="Vorhandene Menge"
-                        >
-                    </div>
+            <input
+              class="available-amount-input"
+              type="number"
+              min="0.01"
+              step="0.01"
+              placeholder="Vorhandene Menge"
+            >
+          </div>
 
-                    <p class="scale-result">
-                        Wähle eine Zutat und gib deine vorhandene Menge ein.
-                    </p>
-                </div>
+          <p class="scale-result">
+            Wähle eine Zutat und gib deine vorhandene
+            Menge ein.
+          </p>
+        </div>
 
-                ${recipe.instructions
+        ${recipe.instructions
             ? `
-                            <h3>Zubereitung</h3>
-                            <p class="instructions">
-                                ${escapeHtml(recipe.instructions)}
-                            </p>
-                        `
+              <h3>Zubereitung</h3>
+
+              <p class="instructions">
+                ${escapeHtml(recipe.instructions)}
+              </p>
+            `
             : ""}
-            </div>
-        `;
+      </div>
+    `;
         const deleteButton = recipeCard.querySelector(".delete-button");
         deleteButton?.addEventListener("click", () => {
-            deleteRecipe(recipe.id);
+            void deleteRecipe(recipe.id);
         });
         configureRecipeScaling(recipeCard, recipe);
         recipeList.appendChild(recipeCard);
@@ -281,14 +327,15 @@ function renderRecipes() {
 function createIngredientList(ingredients) {
     return ingredients
         .map((ingredient) => `
-                <li data-ingredient-id="${ingredient.id}">
-                    <span>${escapeHtml(ingredient.name)}</span>
+        <li data-ingredient-id="${ingredient.id}">
+          <span>${escapeHtml(ingredient.name)}</span>
 
-                    <strong class="ingredient-amount">
-                        ${formatNumber(ingredient.amount)} ${ingredient.unit}
-                    </strong>
-                </li>
-            `)
+          <strong class="ingredient-amount">
+            ${formatNumber(ingredient.amount)}
+            ${ingredient.unit}
+          </strong>
+        </li>
+      `)
         .join("");
 }
 function configureRecipeScaling(recipeCard, recipe) {
@@ -299,7 +346,9 @@ function configureRecipeScaling(recipeCard, recipe) {
         return;
     }
     const updateAmounts = () => {
-        const selectedIngredient = recipe.ingredients.find((ingredient) => ingredient.id === ingredientSelect.value);
+        const selectedIngredient = recipe.ingredients.find((ingredient) => {
+            return ingredient.id === ingredientSelect.value;
+        });
         const availableAmount = Number(availableAmountInput.value);
         if (!selectedIngredient ||
             !Number.isFinite(availableAmount) ||
@@ -319,7 +368,9 @@ function configureRecipeScaling(recipeCard, recipe) {
             amountElement.textContent = `${formatNumber(scaledAmount)} ${ingredient.unit}`;
         });
         const percentage = Math.round(scaleFactor * 100);
-        scaleResult.textContent = `Das Rezept wurde auf ${percentage} % der ursprünglichen Menge angepasst.`;
+        scaleResult.textContent =
+            `Das Rezept wurde auf ${percentage} % ` +
+                "der ursprünglichen Menge angepasst.";
     };
     ingredientSelect.addEventListener("change", updateAmounts);
     availableAmountInput.addEventListener("input", updateAmounts);
@@ -332,29 +383,21 @@ function resetIngredientAmounts(recipeCard, recipe) {
         }
     });
 }
-function deleteRecipe(recipeId) {
+async function deleteRecipe(recipeId) {
     const confirmed = window.confirm("Möchtest du dieses Rezept wirklich löschen?");
     if (!confirmed) {
         return;
     }
-    recipes = recipes.filter((recipe) => recipe.id !== recipeId);
-    saveRecipes();
-    renderRecipes();
-}
-function saveRecipes() {
-    localStorage.setItem("recipe-app-recipes", JSON.stringify(recipes));
-}
-function loadRecipes() {
-    const storedRecipes = localStorage.getItem("recipe-app-recipes");
-    if (!storedRecipes) {
-        return [];
+    const { error } = await supabaseClient
+        .from("recipes")
+        .delete()
+        .eq("id", recipeId);
+    if (error) {
+        console.error("Fehler beim Löschen des Rezeptes:", error);
+        alert(`Rezept konnte nicht gelöscht werden:\n${error.message}`);
+        return;
     }
-    try {
-        return JSON.parse(storedRecipes);
-    }
-    catch {
-        return [];
-    }
+    await loadRecipes();
 }
 function formatNumber(value) {
     return new Intl.NumberFormat("de-DE", {
