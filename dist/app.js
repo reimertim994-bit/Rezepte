@@ -1,4 +1,7 @@
 "use strict";
+const SUPABASE_URL = "https://nokeryzkvhswjhhhrnrd.supabase.co/rest/v1/";
+const SUPABASE_KEY = "sb_publishable_ecrd_N_mFJZGanoHCiVo9Q_B4sO-_Ta";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ingredientTemplates = [
     { name: "Nudeln", defaultUnit: "g" },
     { name: "Reis", defaultUnit: "g" },
@@ -22,7 +25,7 @@ const ingredientTemplates = [
     { name: "Mehl", defaultUnit: "g" },
     { name: "Zucker", defaultUnit: "g" },
     { name: "Salz", defaultUnit: "Prise" },
-    { name: "Pfeffer", defaultUnit: "Prise" }
+    { name: "Pfeffer", defaultUnit: "Prise" },
 ];
 const recipeList = getElement("recipeList");
 const emptyState = getElement("emptyState");
@@ -42,7 +45,8 @@ let recipes = loadRecipes();
 let currentIngredients = [];
 renderRecipes();
 openRecipeModalButton.addEventListener("click", openRecipeModal);
-document.querySelectorAll("[data-close-modal]")
+document
+    .querySelectorAll("[data-close-modal]")
     .forEach((element) => {
     element.addEventListener("click", closeRecipeModal);
 });
@@ -138,15 +142,14 @@ function addIngredient() {
         return;
     }
     if (!Number.isFinite(amount) || amount <= 0) {
-        ingredientError.textContent =
-            "Bitte gib eine gültige Menge ein.";
+        ingredientError.textContent = "Bitte gib eine gültige Menge ein.";
         return;
     }
     currentIngredients.push({
         id: createId(),
         name,
         amount,
-        unit
+        unit,
     });
     ingredientSearchInput.value = "";
     ingredientAmountInput.value = "";
@@ -188,8 +191,7 @@ function saveRecipe(event) {
         return;
     }
     if (currentIngredients.length === 0) {
-        ingredientError.textContent =
-            "Das Rezept benötigt mindestens eine Zutat.";
+        ingredientError.textContent = "Das Rezept benötigt mindestens eine Zutat.";
         return;
     }
     recipes.push({
@@ -197,8 +199,8 @@ function saveRecipe(event) {
         name: recipeName,
         instructions,
         ingredients: currentIngredients.map((ingredient) => ({
-            ...ingredient
-        }))
+            ...ingredient,
+        })),
     });
     saveRecipes();
     renderRecipes();
@@ -314,12 +316,10 @@ function configureRecipeScaling(recipeCard, recipe) {
                 return;
             }
             const scaledAmount = ingredient.amount * scaleFactor;
-            amountElement.textContent =
-                `${formatNumber(scaledAmount)} ${ingredient.unit}`;
+            amountElement.textContent = `${formatNumber(scaledAmount)} ${ingredient.unit}`;
         });
         const percentage = Math.round(scaleFactor * 100);
-        scaleResult.textContent =
-            `Das Rezept wurde auf ${percentage} % der ursprünglichen Menge angepasst.`;
+        scaleResult.textContent = `Das Rezept wurde auf ${percentage} % der ursprünglichen Menge angepasst.`;
     };
     ingredientSelect.addEventListener("change", updateAmounts);
     availableAmountInput.addEventListener("input", updateAmounts);
@@ -328,8 +328,7 @@ function resetIngredientAmounts(recipeCard, recipe) {
     recipe.ingredients.forEach((ingredient) => {
         const amountElement = recipeCard.querySelector(`[data-ingredient-id="${ingredient.id}"] .ingredient-amount`);
         if (amountElement) {
-            amountElement.textContent =
-                `${formatNumber(ingredient.amount)} ${ingredient.unit}`;
+            amountElement.textContent = `${formatNumber(ingredient.amount)} ${ingredient.unit}`;
         }
     });
 }
@@ -359,7 +358,7 @@ function loadRecipes() {
 }
 function formatNumber(value) {
     return new Intl.NumberFormat("de-DE", {
-        maximumFractionDigits: 2
+        maximumFractionDigits: 2,
     }).format(value);
 }
 function escapeHtml(value) {
