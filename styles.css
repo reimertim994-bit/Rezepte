@@ -1,0 +1,410 @@
+﻿* {
+    box-sizing: border-box;
+}
+
+:root {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #202020;
+    background: #f4f5f7;
+}
+
+body {
+    min-height: 100vh;
+    margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 28px 5%;
+    color: white;
+    background: #25364b;
+}
+
+header h1 {
+    margin: 0 0 6px;
+}
+
+header p {
+    margin: 0;
+    color: #d9e1eb;
+}
+
+main {
+    width: min(1200px, 90%);
+    margin: 40px auto;
+}
+
+.add-recipe-button,
+.primary-button {
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    color: white;
+    background: #d96735;
+    font-weight: 700;
+}
+
+.add-recipe-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.add-recipe-button span {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.add-recipe-button:hover,
+.primary-button:hover {
+    background: #bd5428;
+}
+
+.empty-state {
+    padding: 70px 20px;
+    border: 2px dashed #c8cdd3;
+    border-radius: 18px;
+    text-align: center;
+    background: white;
+}
+
+.empty-state.hidden {
+    display: none;
+}
+
+.empty-icon {
+    font-size: 55px;
+}
+
+.empty-state h2 {
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: #6b7280;
+}
+
+.recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 22px;
+}
+
+.recipe-card {
+    overflow: hidden;
+    border-radius: 16px;
+    background: white;
+    box-shadow: 0 5px 18px rgb(0 0 0 / 8%);
+}
+
+.recipe-card-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px;
+    color: white;
+    background: #3c596f;
+}
+
+.recipe-card-header h2 {
+    margin: 0;
+    font-size: 21px;
+}
+
+.delete-button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    color: white;
+    background: rgb(255 255 255 / 18%);
+}
+
+.delete-button:hover {
+    background: #ba3d3d;
+}
+
+.recipe-content {
+    padding: 20px;
+}
+
+.recipe-content h3 {
+    margin: 0 0 12px;
+}
+
+.ingredient-list {
+    padding: 0;
+    margin: 0 0 22px;
+    list-style: none;
+}
+
+.ingredient-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px solid #ececec;
+}
+
+.instructions {
+    color: #50545a;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+.scale-box {
+    padding: 15px;
+    border-radius: 10px;
+    background: #f2f5f7;
+}
+
+.scale-box label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.scale-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.scale-input-row select,
+.scale-input-row input {
+    min-width: 0;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd0d6;
+    border-radius: 8px;
+    background: white;
+}
+
+.scale-result {
+    margin: 10px 0 0;
+    color: #3f4e5b;
+    font-size: 14px;
+}
+
+.modal {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 55%);
+}
+
+.modal-content {
+    position: relative;
+    z-index: 1;
+    width: min(680px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 20px 70px rgb(0 0 0 / 30%);
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e7e7e7;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.icon-button {
+    border: none;
+    background: transparent;
+    font-size: 30px;
+}
+
+form {
+    padding: 24px;
+}
+
+.form-group {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-weight: 700;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #c9ced4;
+    border-radius: 9px;
+    background: white;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #d96735;
+    outline: 2px solid rgb(217 103 53 / 20%);
+}
+
+textarea {
+    resize: vertical;
+}
+
+.ingredient-section {
+    margin-bottom: 24px;
+}
+
+.section-heading h3 {
+    margin: 0;
+}
+
+.section-heading p {
+    margin: 5px 0 14px;
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.ingredient-search-wrapper {
+    position: relative;
+}
+
+.suggestions {
+    position: absolute;
+    z-index: 5;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    max-height: 220px;
+    overflow-y: auto;
+    border: 1px solid #cdd2d7;
+    border-radius: 9px;
+    background: white;
+    box-shadow: 0 10px 25px rgb(0 0 0 / 12%);
+}
+
+.suggestions.hidden {
+    display: none;
+}
+
+.suggestion-button {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 11px 14px;
+    border: none;
+    border-bottom: 1px solid #eeeeee;
+    background: white;
+    text-align: left;
+}
+
+.suggestion-button:hover {
+    background: #f2f4f6;
+}
+
+.suggestion-button small {
+    color: #777777;
+}
+
+.ingredient-input-row {
+    display: grid;
+    grid-template-columns: 120px 150px 1fr;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.secondary-button,
+.cancel-button {
+    border: 1px solid #c7ccd2;
+    border-radius: 9px;
+    padding: 11px 15px;
+    background: white;
+}
+
+.secondary-button:hover,
+.cancel-button:hover {
+    background: #f0f1f3;
+}
+
+.selected-ingredients {
+    display: grid;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.selected-ingredient {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 11px 13px;
+    border-radius: 9px;
+    background: #f1f3f5;
+}
+
+.remove-ingredient-button {
+    border: none;
+    color: #b52d2d;
+    background: transparent;
+    font-weight: 700;
+}
+
+.error-message {
+    min-height: 18px;
+    margin: 8px 0 0;
+    color: #c52b2b;
+    font-size: 14px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+@media (max-width: 650px) {
+    header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .ingredient-input-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ingredient-input-row button {
+        grid-column: 1 / -1;
+    }
+
+    .scale-input-row {
+        flex-direction: column;
+    }
+}

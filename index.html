@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Meine Rezepte</title>
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <header>
+      <div>
+        <h1>Meine Rezepte</h1>
+        <p>Rezepte speichern und Mengen automatisch umrechnen.</p>
+      </div>
+
+      <button id="openRecipeModalButton" class="add-recipe-button">
+        <span>+</span>
+        Rezept hinzufügen
+      </button>
+    </header>
+
+    <main>
+      <section id="emptyState" class="empty-state">
+        <div class="empty-icon">🍳</div>
+        <h2>Noch keine Rezepte vorhanden</h2>
+        <p>Füge dein erstes Rezept hinzu.</p>
+      </section>
+
+      <section id="recipeList" class="recipe-grid"></section>
+    </main>
+
+    <!-- Popup zum Hinzufügen eines Rezeptes -->
+    <div id="recipeModal" class="modal hidden">
+      <div class="modal-backdrop" data-close-modal></div>
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Neues Rezept</h2>
+
+          <button
+            type="button"
+            class="icon-button"
+            data-close-modal
+            aria-label="Popup schließen"
+          >
+            ×
+          </button>
+        </div>
+
+        <form id="recipeForm">
+          <label class="form-group">
+            <span>Rezeptname</span>
+
+            <input
+              id="recipeName"
+              type="text"
+              placeholder="Zum Beispiel Bolognese"
+              required
+            />
+          </label>
+
+          <div class="ingredient-section">
+            <div class="section-heading">
+              <div>
+                <h3>Zutaten</h3>
+                <p>Suche eine Zutat oder gib eine eigene ein.</p>
+              </div>
+            </div>
+
+            <div class="ingredient-search-wrapper">
+              <input
+                id="ingredientSearch"
+                type="text"
+                placeholder="Zutat suchen, z. B. Nudeln"
+                autocomplete="off"
+              />
+
+              <div id="ingredientSuggestions" class="suggestions hidden"></div>
+            </div>
+
+            <div class="ingredient-input-row">
+              <input
+                id="ingredientAmount"
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="Menge"
+              />
+
+              <select id="ingredientUnit">
+                <option value="g">Gramm</option>
+                <option value="kg">Kilogramm</option>
+                <option value="ml">Milliliter</option>
+                <option value="l">Liter</option>
+                <option value="Stück">Stück</option>
+                <option value="EL">Esslöffel</option>
+                <option value="TL">Teelöffel</option>
+                <option value="Prise">Prise</option>
+              </select>
+
+              <button
+                id="addIngredientButton"
+                type="button"
+                class="secondary-button"
+              >
+                Zutat hinzufügen
+              </button>
+            </div>
+
+            <p id="ingredientError" class="error-message"></p>
+
+            <div id="selectedIngredients" class="selected-ingredients"></div>
+          </div>
+
+          <label class="form-group">
+            <span>Zubereitung</span>
+
+            <textarea
+              id="recipeInstructions"
+              rows="5"
+              placeholder="Beschreibe hier die Zubereitung ..."
+            ></textarea>
+          </label>
+
+          <div class="modal-actions">
+            <button type="button" class="cancel-button" data-close-modal>
+              Abbrechen
+            </button>
+
+            <button type="submit" class="primary-button">
+              Rezept speichern
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="dist/app.js"></script>
+  </body>
+</html>
